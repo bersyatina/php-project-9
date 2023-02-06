@@ -1,6 +1,7 @@
 <?php
 error_reporting(-1); ini_set('display_errors', 'On');
 use DI\Container;
+use Hexlet\Code\PostgreSQLCreateTable;
 use Slim\Factory\AppFactory;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
@@ -10,10 +11,23 @@ require __DIR__ . '/../vendor/autoload.php';
 
 try {
     Connection::get()->connect();
-    echo 'A connection to the PostgreSQL database sever has been established successfully.';
+//    echo 'A connection to the PostgreSQL database sever has been established successfully.';
 } catch (\PDOException $e) {
     echo $e->getMessage();
 }
+
+try {
+    // подключение к базе данных PostgreSQL
+    $pdo = Connection::get()->connect();
+    $tableCreator = new PostgreSQLCreateTable($pdo);
+
+    // создание и запрос таблицы из
+    // базы данных
+    $tables = $tableCreator->createTables();
+} catch (\PDOException $e) {
+    echo $e->getMessage();
+}
+
 
 $container = new Container();
 

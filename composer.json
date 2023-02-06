@@ -6,7 +6,10 @@
     "autoload": {
         "psr-4": {
             "Hexlet\\Code\\": "src/"
-        }
+        },
+        "files": [
+            "src/Connection.php"
+        ]
     },
     "authors": [
         {
@@ -30,7 +33,8 @@
         "twbs/bootstrap": "5.2.3",
         "symfony/asset": "^6.2",
         "illuminate/database": "~5.1",
-        "ext-pdo": "*"
+        "ext-pdo": "*",
+        "vlucas/valitron": "^1.4"
     },
     "config": {
         "allow-plugins": {
