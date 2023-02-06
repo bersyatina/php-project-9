@@ -19,9 +19,7 @@ $app = AppFactory::create();
 $app->add(TwigMiddleware::createFromContainer($app));
 
 $app->get('/', function ($request, $response, $args) {
-    return $this->get('view')->render($response, 'face.twig', [
-        'name' => $args['name']
-    ]);
+    return $this->get('view')->render($response, 'face.twig', []);
 })->setName('profile');
 
 $app->run();
