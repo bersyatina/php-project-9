@@ -28,8 +28,7 @@ class PostgreSQLGetUrls {
      */
     public function getUrls(): array
     {
-        // подготовка запроса для добавления данных
-        $sql = 'SELECT * FROM urls';
+        $sql = 'SELECT * FROM urls ORDER BY created_at DESC';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -37,8 +36,23 @@ class PostgreSQLGetUrls {
 
     public function getUrl($id): array
     {
-        // подготовка запроса для добавления данных
         $sql = 'SELECT * FROM urls WHERE id = ?';
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function getChecks($id): array|bool
+    {
+        $sql = 'SELECT * FROM url_checks WHERE url_id = ? ORDER BY created_at DESC';
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getLastCheck($id): array|bool
+    {
+        $sql = 'SELECT * FROM url_checks WHERE url_id = ? ORDER BY created_at DESC';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);

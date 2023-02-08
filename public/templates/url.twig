@@ -26,7 +26,7 @@
             </table>
         </div>
         <h2 class="mt-5 mb-3">Проверки</h2>
-        <form method="post" action="/urls/2/checks">
+        <form method="post" action="/urls/{{ site.id }}/checks">
             <input type="submit" class="btn btn-primary" value="Запустить проверку">
         </form>
         <table class="table table-bordered table-hover" data-test="checks">
@@ -39,16 +39,16 @@
                 <th>description</th>
                 <th>Дата создания</th>
             </tr>
-{#            {% for check in checks %}#}
-{#                <tr>#}
-{#                    <td>{{ check.id }}</td>#}
-{#                    <td>{{ check.code }}</td>#}
-{#                    <td class="text-break">{{ check.h1 }}</td>#}
-{#                    <td class="text-break">{{ check.title }}</td>#}
-{#                    <td class="text-break">{{ check.description }}</td>#}
-{#                    <td>{{ check.created_at }}</td>#}
-{#                </tr>#}
-{#            {% endfor %}#}
+            {% for check in checks %}
+                <tr>
+                    <td>{{ check.id }}</td>
+                    <td>{{ check.status_code }}</td>
+                    <td class="text-break">{{ check.h1 }}</td>
+                    <td class="text-break">{{ check.title }}</td>
+                    <td class="text-break">{{ check.description }}</td>
+                    <td>{{ check.created_at }}</td>
+                </tr>
+            {% endfor %}
             </tbody>
         </table>
 
