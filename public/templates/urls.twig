@@ -1,0 +1,45 @@
+{% extends "layouts/app.twig" %}
+
+{% block title %}Анализатор страниц{% endblock %}
+{% block head %}
+    {{ parent() }}
+{% endblock %}
+{% block content %}
+    <div class="container-lg mt-3">
+        <h1>Сайты</h1>
+        <table class="table table-bordered table-hover text-nowrap" data-test="urls">
+            <tbody>
+            <tr>
+                <th>ID</th>
+                <th>Имя</th>
+                <th>Последняя проверка</th>
+                <th>Код ответа</th>
+            </tr>
+            {% for site in sites %}
+                <tr>
+                    <td>1</td>
+                    <td>
+                        <a href="/urls/{{ site.id }}">
+                            {{ site.name }}
+                        </a>
+                    </td>
+                    <td>{{ site.created_at }}</td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+
+        {% if flash.errors %}
+            {% for messages in flash.errors %}
+                {% for value in messages %}
+                    <div class="invalid-feedback">
+                        {{ value }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        {% endif %}
+
+    </div>
+{% endblock %}
