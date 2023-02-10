@@ -42,6 +42,14 @@ class PostgreSQLGetUrls {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function getUrlByName($name): array|bool
+    {
+        $sql = 'SELECT * FROM urls WHERE name = ?';
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$name]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     public function getChecks($id): array|bool
     {
         $sql = 'SELECT * FROM url_checks WHERE url_id = ? ORDER BY created_at DESC';
@@ -52,7 +60,7 @@ class PostgreSQLGetUrls {
 
     public function getLastCheck($id): array|bool
     {
-        $sql = 'SELECT * FROM url_checks WHERE url_id = ? ORDER BY created_at DESC';
+        $sql = 'SELECT created_at FROM url_checks WHERE url_id = ? ORDER BY created_at DESC';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);

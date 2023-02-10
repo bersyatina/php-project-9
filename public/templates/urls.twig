@@ -17,7 +17,7 @@
             </tr>
             {% for site in sites %}
                 <tr>
-                    <td>1</td>
+                    <td>{{ site.id }}</td>
                     <td>
                         <a href="/urls/{{ site.id }}">
                             {{ site.name }}

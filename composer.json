@@ -6,10 +6,7 @@
     "autoload": {
         "psr-4": {
             "Hexlet\\Code\\": "src/"
-        },
-        "files": [
-            "src/Connection.php"
-        ]
+        }
     },
     "authors": [
         {
@@ -34,15 +31,12 @@
         "symfony/asset": "^6.2",
         "illuminate/database": "~5.1",
         "ext-pdo": "*",
-        "vlucas/valitron": "^1.4",
-        "laracasts/flash": "^3.2"
+      "ext-dom": "*",
+        "ext-libxml": "*"
     },
     "config": {
         "allow-plugins": {
             "kylekatarnls/update-helper": true
         }
-    },
-    "require-dev": {
-        "symfony/var-dumper": "^6.2"
     }
 }

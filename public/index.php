@@ -1,5 +1,7 @@
 <?php
 error_reporting(-1); ini_set('display_errors', 'On');
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 use DI\Container;
 use Hexlet\Code\PostgreSQLAddData;
 use Hexlet\Code\PostgreSQLCreateTable;
@@ -54,24 +56,26 @@ $app->get('/', function ($request, $response, $args) {
     ]);
 })->setName('face');
 
-$app->post('/urls', function ($request, $response) {
+$app->post('/urls', function ($request, $response) use ($app) {
 
     $inserter = new PostgreSQLAddData(Connection::get()->connect());
-    $messages = $inserter->insertUrl($request->getParsedBody()['url']['name']);
+    $result = $inserter->insertUrl($request->getParsedBody()['url']['name']);
 
-    $messages['success'] ?? flash('Welcome Aboard!');
+    $site = new PostgreSQLGetUrls(Connection::get()->connect());
+    $site = $site->getUrl($result['success']['id']);
 
-    return $this->get('view')->render($response, 'face.twig', [
-        'flash' => $messages
+    return $this->get('view')->render($response, 'url.twig', [
+        'flash' => $result,
+        'site' => $site,
+        'checks' => [],
     ]);
 })->setName('face');
 
 $app->get('/urls/{id}', function ($request, $response, $args) {
-    $site = new PostgreSQLGetUrls(Connection::get()->connect());
-    $site = $site->getUrl($args['id']);
+    $getterObject = new PostgreSQLGetUrls(Connection::get()->connect());
 
-    $checks = new PostgreSQLGetUrls(Connection::get()->connect());
-    $checks = $checks->getChecks($args['id']);
+    $site = $getterObject->getUrl($args['id']);
+    $checks = $getterObject->getChecks($args['id']);
 
     return $this->get('view')->render($response, 'url.twig', [
         'flash' => [],
@@ -83,41 +87,70 @@ $app->get('/urls/{id}', function ($request, $response, $args) {
 $app->get('/urls', function ($request, $response, $args) {
 
     $sites = new PostgreSQLGetUrls(Connection::get()->connect());
-    $sites = $sites->getUrls();
+    $sitesList = $sites->getUrls();
 
-    $sites = array_map(function ($site) use ($sites) {
+    $sitesList = array_map(function ($site) use ($sites) {
         $site['created_at'] = !empty($site['created_at']) ? explode('.', $site['created_at'])[0] : null;
 
-        $sites = new PostgreSQLGetUrls(Connection::get()->connect());
         $lastCheck = $sites->getLastCheck($site['id']);
 
         $site['last_check'] = !empty($lastCheck) ? explode('.', $lastCheck['created_at'])[0] : null;
         return $site;
-    }, $sites);
+    }, $sitesList);
 
     return $this->get('view')->render($response, 'urls.twig', [
-        'sites' => $sites
+        'sites' => $sitesList
     ]);
 })->setName('urls');
 
 $app->post('/urls/{url_id}/checks', function ($request, $response, $args) {
 
     $inserter = new PostgreSQLAddData(Connection::get()->connect());
-    $messages = $inserter->addCheck($args['url_id']);
 
-    $messages['success'] ?? flash('Welcome Aboard!');
+    $getterObject = new PostgreSQLGetUrls(Connection::get()->connect());
+    $site = $getterObject->getUrl($args['url_id']);
+    dd(exec("ping -n 5 {$site['name']}"));
+    try {
+        $clientGuzzle = new GuzzleHttp\Client(['base_uri' => $site['name']]);
+        $requestCheck = $clientGuzzle->request('GET') ?? false;
+    } catch (\PDOException $e) {
+        echo $e->getMessage();
+    }
 
-    $site = new PostgreSQLGetUrls(Connection::get()->connect());
-    $site = $site->getUrl($args['url_id']);
+    if (isset($requestCheck)) {
+        $responseCheck = $requestCheck->getBody();
 
-    $checks = new PostgreSQLGetUrls(Connection::get()->connect());
-    $checks = $checks->getChecks($args['url_id']);
-// не возврат представления а редирект
+        libxml_use_internal_errors(true);
+        $doc = new DOMDocument();
+        $doc->loadHTML($responseCheck);
+        $xpath = new DOMXPath($doc);
+
+        $descriptions = $xpath->evaluate('//meta');
+        $descArr = [];
+        foreach ($descriptions as $description) {
+            $name = $description->getAttribute("name");
+            $descArr[] = str_contains($name, 'description') ? $description->getAttribute("content") : '';
+        }
+
+        $pageData = [
+            'url_id' => $args['url_id'],
+            'status_code' => $requestCheck->getStatusCode() ?? null,
+            'h1' => $xpath->evaluate('//h1')[0]->textContent ?? '',
+            'description' => array_values(array_filter($descArr))[0] ?? '',
+            'title' => $xpath->evaluate('//title')[0]->textContent ?? '',
+        ];
+
+        $inserter->addCheck($pageData);
+    }
+
+    $checks = $getterObject->getChecks($site['id']);
+
     return $this->get('view')->render($response, 'url.twig', [
-        'flash' => $messages,
+        'flash' => [],
         'site' => $site,
         'checks' => $checks,
     ]);
+
 })->setName('add_check');
 
 $app->run();

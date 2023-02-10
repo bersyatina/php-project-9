@@ -1,12 +1,14 @@
 <?php
 
 namespace Hexlet\Code;
+
 use Valitron\Validator;
 
 /**
  * Создание в записи в таблице urls
  */
-class PostgreSQLAddData {
+class PostgreSQLAddData
+{
 
     /**
      * объект PDO
@@ -18,7 +20,8 @@ class PostgreSQLAddData {
      * инициализация объекта с объектом \PDO
      * @тип параметра $pdo
      */
-    public function __construct($pdo) {
+    public function __construct($pdo)
+    {
         $this->pdo = $pdo;
     }
 
@@ -41,17 +44,26 @@ class PostgreSQLAddData {
             ]
         ]);
 
-        if($v->validate()) {
-            $sql = 'INSERT INTO urls(name, created_at) VALUES(:name, NOW())';
-            $stmt = $this->pdo->prepare($sql);
+        if ($v->validate()) {
 
-            $stmt->bindValue(':name', $name);
+            $containsValue = new PostgreSQLGetUrls($this->pdo);
+            $containsValue = $containsValue->getUrlByName($name);
 
-            $stmt->execute();
+            if (empty($containsValue)) {
+                $sql = 'INSERT INTO urls(name, created_at) VALUES(:name, NOW())';
+                $stmt = $this->pdo->prepare($sql);
+
+                $stmt->bindValue(':name', $name);
+
+                $stmt->execute();
+                $id = $this->pdo->lastInsertId('urls_id_seq');
+            } else {
+                $id = $containsValue['id'];
+            }
 
             return ['success' => [
                 'name' => $name,
-                'id' => $this->pdo->lastInsertId('urls_id_seq'),
+                'id' => $id,
             ]];
         } else {
             return ['errors' => $v->errors()];
@@ -61,22 +73,27 @@ class PostgreSQLAddData {
     /**
      * добавление значений в таблицу url_checks
      */
-    public function addCheck($id): array
+    public function addCheck(array $pageData): array
     {
         // подготовка запроса для добавления данных
-        $v = new Validator(array('id' => $id));
+        $v = new Validator(array('id' => $pageData['url_id']));
         $v->rule('integer', 'id');
 
-        if($v->validate()) {
-            $sql = 'INSERT INTO url_checks(url_id, created_at) VALUES(:id, NOW())';
+        if ($v->validate()) {
+
+            $sql = 'INSERT INTO url_checks(url_id, status_code, h1, title, description, created_at) 
+                    VALUES(:id, :status_code, :h1, :title, :description, NOW())';
             $stmt = $this->pdo->prepare($sql);
-
-            $stmt->bindValue(':id', $id);
-
+            $stmt->bindValue(':id', $pageData['url_id']);
+            $stmt->bindValue(':status_code', $pageData['status_code']);
+            $stmt->bindValue(':h1', $pageData['h1']);
+            $stmt->bindValue(':title', $pageData['title']);
+            $stmt->bindValue(':description', $pageData['description']);
+            
             $stmt->execute();
 
             return ['success' => [
-                'id' => $id,
+                'id' => $pageData['url_id'],
                 'check' => $this->pdo->lastInsertId('url_checks_id_seq'),
             ]];
         } else {
