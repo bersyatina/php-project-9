@@ -1,5 +1,7 @@
 <?php
 error_reporting(-1); ini_set('display_errors', 'On');
+
+use Hexlet\Code\Handler;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use DI\Container;
@@ -20,18 +22,18 @@ try {
     echo $e->getMessage();
 }
 
-//try {
-//    // подключение к базе данных PostgreSQL
-//    $pdo = Connection::get()->connect();
-//    $tableCreator = new PostgreSQLCreateTable($pdo);
-//
-//    // создание и запрос таблицы из
-//    // базы данных
-//    $tables = $tableCreator->createTableUrls();
-//    $tables = $tableCreator->createTableUrlChecks();
-//} catch (\PDOException $e) {
-//    echo $e->getMessage();
-//}
+try {
+    // подключение к базе данных PostgreSQL
+    $pdo = Connection::get()->connect();
+    $tableCreator = new PostgreSQLCreateTable($pdo);
+
+    // создание и запрос таблицы из
+    // базы данных
+    $tables = $tableCreator->createTableUrls();
+    $tables = $tableCreator->createTableUrlChecks();
+} catch (\PDOException $e) {
+    echo $e->getMessage();
+}
 
 $container = new Container();
 
@@ -95,6 +97,7 @@ $app->get('/urls', function ($request, $response, $args) {
         $lastCheck = $sites->getLastCheck($site['id']);
 
         $site['last_check'] = !empty($lastCheck) ? explode('.', $lastCheck['created_at'])[0] : null;
+        $site['check_code'] = $lastCheck['status_code'] ?? null;
         return $site;
     }, $sitesList);
 
@@ -109,38 +112,40 @@ $app->post('/urls/{url_id}/checks', function ($request, $response, $args) {
 
     $getterObject = new PostgreSQLGetUrls(Connection::get()->connect());
     $site = $getterObject->getUrl($args['url_id']);
-    dd(exec("ping -n 5 {$site['name']}"));
-    try {
-        $clientGuzzle = new GuzzleHttp\Client(['base_uri' => $site['name']]);
-        $requestCheck = $clientGuzzle->request('GET') ?? false;
-    } catch (\PDOException $e) {
-        echo $e->getMessage();
-    }
 
-    if (isset($requestCheck)) {
-        $responseCheck = $requestCheck->getBody();
-
-        libxml_use_internal_errors(true);
-        $doc = new DOMDocument();
-        $doc->loadHTML($responseCheck);
-        $xpath = new DOMXPath($doc);
-
-        $descriptions = $xpath->evaluate('//meta');
-        $descArr = [];
-        foreach ($descriptions as $description) {
-            $name = $description->getAttribute("name");
-            $descArr[] = str_contains($name, 'description') ? $description->getAttribute("content") : '';
+    if (Handler::isDomainAvailible($site['name'])) {
+        try {
+            $clientGuzzle = new GuzzleHttp\Client(['base_uri' => $site['name']]);
+            $requestCheck = $clientGuzzle->request('GET') ?? false;
+        } catch (\PDOException $e) {
+            echo $e->getMessage();
         }
 
-        $pageData = [
-            'url_id' => $args['url_id'],
-            'status_code' => $requestCheck->getStatusCode() ?? null,
-            'h1' => $xpath->evaluate('//h1')[0]->textContent ?? '',
-            'description' => array_values(array_filter($descArr))[0] ?? '',
-            'title' => $xpath->evaluate('//title')[0]->textContent ?? '',
-        ];
+        if (isset($requestCheck)) {
+            $responseCheck = $requestCheck->getBody();
 
-        $inserter->addCheck($pageData);
+            libxml_use_internal_errors(true);
+            $doc = new DOMDocument();
+            $doc->loadHTML($responseCheck);
+            $xpath = new DOMXPath($doc);
+
+            $descriptions = $xpath->evaluate('//meta');
+            $descArr = [];
+            foreach ($descriptions as $description) {
+                $name = $description->getAttribute("name");
+                $descArr[] = str_contains($name, 'description') ? $description->getAttribute("content") : '';
+            }
+
+            $pageData = [
+                'url_id' => $args['url_id'],
+                'status_code' => $requestCheck->getStatusCode() ?? null,
+                'h1' => $xpath->evaluate('//h1')[0]->textContent ?? '',
+                'description' => array_values(array_filter($descArr))[0] ?? '',
+                'title' => $xpath->evaluate('//title')[0]->textContent ?? '',
+            ];
+
+            $inserter->addCheck($pageData);
+        }
     }
 
     $checks = $getterObject->getChecks($site['id']);

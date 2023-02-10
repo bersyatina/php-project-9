@@ -60,7 +60,7 @@ class PostgreSQLGetUrls {
 
     public function getLastCheck($id): array|bool
     {
-        $sql = 'SELECT created_at FROM url_checks WHERE url_id = ? ORDER BY created_at DESC';
+        $sql = 'SELECT status_code, created_at FROM url_checks WHERE url_id = ? ORDER BY created_at DESC';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
