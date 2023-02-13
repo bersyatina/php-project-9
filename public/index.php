@@ -52,18 +52,30 @@ $app = AppFactory::create();
 
 $app->add(TwigMiddleware::createFromContainer($app));
 
-$app->get('/', function ($request, $response, $args) {
+$app->get('/', function (Request $request, Response $response, $args) {
+
     return $this->get('view')->render($response, 'face.twig', [
-        'flash' => []
+        'flash' => [],
+        'url' => [],
     ]);
 })->setName('face');
 
-$app->post('/urls', function ($request, $response) use ($app) {
+$app->post('/urls', function (Request $request, Response $response) use ($app) {
 
-    $inserter = new PostgreSQLAddData(Connection::get()->connect());
-    $result = $inserter->insertUrl($request->getParsedBody()['url']['name']);
+    $connection = Connection::get()->connect();
 
-    $site = new PostgreSQLGetUrls(Connection::get()->connect());
+    $inserter = new PostgreSQLAddData($connection);
+    $url = $request->getParsedBody()['url'];
+    $result = $inserter->insertUrl($url['name']);
+
+    if (array_key_exists('errors', $result)) {
+        return $this->get('view')->render($response, 'face.twig', [
+            'flash' => ['errors' => $result['errors']],
+            'url' => $url
+        ]);
+    }
+
+    $site = new PostgreSQLGetUrls($connection);
     $site = $site->getUrl($result['success']['id']);
 
     return $this->get('view')->render($response, 'url.twig', [
@@ -108,9 +120,10 @@ $app->get('/urls', function ($request, $response, $args) {
 
 $app->post('/urls/{url_id}/checks', function ($request, $response, $args) {
 
-    $inserter = new PostgreSQLAddData(Connection::get()->connect());
+    $connection = Connection::get()->connect();
+    $inserter = new PostgreSQLAddData($connection);
+    $getterObject = new PostgreSQLGetUrls($connection);
 
-    $getterObject = new PostgreSQLGetUrls(Connection::get()->connect());
     $site = $getterObject->getUrl($args['url_id']);
 
     if (Handler::isDomainAvailible($site['name'])) {

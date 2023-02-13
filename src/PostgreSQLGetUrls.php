@@ -1,14 +1,15 @@
 <?php
 
 namespace Hexlet\Code;
+
 use PDO;
 use Valitron\Validator;
 
 /**
  * Запрос urls
  */
-class PostgreSQLGetUrls {
-
+class PostgreSQLGetUrls
+{
     /**
      * объект PDO
      * @var \PDO
@@ -19,7 +20,8 @@ class PostgreSQLGetUrls {
      * инициализация объекта с объектом \PDO
      * @тип параметра $pdo
      */
-    public function __construct($pdo) {
+    public function __construct($pdo)
+    {
         $this->pdo = $pdo;
     }
 
@@ -34,7 +36,7 @@ class PostgreSQLGetUrls {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getUrl($id): array
+    public function getUrl($id): array|bool
     {
         $sql = 'SELECT * FROM urls WHERE id = ?';
         $stmt = $this->pdo->prepare($sql);

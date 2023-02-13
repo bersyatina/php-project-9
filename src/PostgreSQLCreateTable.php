@@ -1,11 +1,12 @@
 <?php
 
 namespace Hexlet\Code;
+
 /**
  * Создание в PostgreSQL таблицы из демонстрации PHP
  */
-class PostgreSQLCreateTable {
-
+class PostgreSQLCreateTable
+{
     /**
      * объект PDO
      * @var \PDO
@@ -16,14 +17,16 @@ class PostgreSQLCreateTable {
      * инициализация объекта с объектом \PDO
      * @тип параметра $pdo
      */
-    public function __construct($pdo) {
+    public function __construct($pdo)
+    {
         $this->pdo = $pdo;
     }
 
     /**
      * создание таблиц
      */
-    public function createTableUrls() {
+    public function createTableUrls()
+    {
         $sql = 'CREATE TABLE IF NOT EXISTS urls (
                    id serial PRIMARY KEY,
                    name character varying(255) NOT NULL UNIQUE, 
@@ -35,7 +38,8 @@ class PostgreSQLCreateTable {
         return $this;
     }
 
-    public function createTableUrlChecks() {
+    public function createTableUrlChecks()
+    {
         $sql = 'CREATE TABLE IF NOT EXISTS url_checks (
                    id serial PRIMARY KEY,
                    url_id bigint REFERENCES urls (id),

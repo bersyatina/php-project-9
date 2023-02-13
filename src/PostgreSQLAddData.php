@@ -9,7 +9,6 @@ use Valitron\Validator;
  */
 class PostgreSQLAddData
 {
-
     /**
      * объект PDO
      * @var \PDO
@@ -28,24 +27,17 @@ class PostgreSQLAddData
     /**
      * добавление значений в таблицу urls
      */
-    public function insertUrl($name): array
+    public function insertUrl($name): array| bool
     {
         // подготовка запроса для добавления данных
-        $v = new Validator(array('name' => $name));
-        $v->rules([
-            'lengthMax' => [
-                ['name', 256]
-            ],
-            'lengthMin' => [
-                ['name', 5]
-            ],
-            'required' => [
-                ['name']
-            ]
+        $v = new Validator([
+            'name' => $name
         ]);
+        $v->rule('required', 'name')->message('URL не должен быть пустым')->label('Name');
+        $v->rule('lengthMax', 'name', 256)->message('Слишком длинный адрес')->label('Name');
+        $v->rule('url', 'name')->message('Некорректный URL')->label('Name');
 
         if ($v->validate()) {
-
             $containsValue = new PostgreSQLGetUrls($this->pdo);
             $containsValue = $containsValue->getUrlByName($name);
 
@@ -57,16 +49,20 @@ class PostgreSQLAddData
 
                 $stmt->execute();
                 $id = $this->pdo->lastInsertId('urls_id_seq');
+                $msg = 'Страница успешно добавлена';
             } else {
                 $id = $containsValue['id'];
+                $msg = 'Страница уже существует';
             }
 
             return ['success' => [
-                'name' => $name,
+                'message' => $msg,
                 'id' => $id,
             ]];
         } else {
-            return ['errors' => $v->errors()];
+            foreach ($v->errors()['name'] as $error) {
+                return ['errors' => [$error]];
+            }
         }
     }
 
@@ -80,7 +76,6 @@ class PostgreSQLAddData
         $v->rule('integer', 'id');
 
         if ($v->validate()) {
-
             $sql = 'INSERT INTO url_checks(url_id, status_code, h1, title, description, created_at) 
                     VALUES(:id, :status_code, :h1, :title, :description, NOW())';
             $stmt = $this->pdo->prepare($sql);
@@ -89,7 +84,6 @@ class PostgreSQLAddData
             $stmt->bindValue(':h1', $pageData['h1']);
             $stmt->bindValue(':title', $pageData['title']);
             $stmt->bindValue(':description', $pageData['description']);
-            
             $stmt->execute();
 
             return ['success' => [
