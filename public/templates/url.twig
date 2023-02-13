@@ -5,6 +5,11 @@
     {{ parent() }}
 {% endblock %}
 {% block content %}
+{% if flash.success %}
+    <div class="alert alert-success d-block" role="alert">{{ flash.success }}</div>
+{% elseif flash.errors %}
+    <div class="alert alert-danger d-block" role="alert">{{ flash.errors }}</div>
+{% endif %}
     <div class="container-lg mt-3">
         <h1>Сайт: {{ site.name }}</h1>
         <div class="table-responsive">

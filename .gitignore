@@ -3,3 +3,4 @@
 .phpunit.result.cache
 /public/cache/
 /node_modules/
+/src/database.ini
