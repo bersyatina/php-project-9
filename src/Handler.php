@@ -24,4 +24,12 @@ class Handler
         }
         return false;
     }
+
+    public static function setChecksCreatedTime($checks): array
+    {
+        return array_map(function ($check) {
+            $check['created_at'] = explode('.', $check['created_at'])[0] ?? null;
+            return $check;
+        }, $checks);
+    }
 }

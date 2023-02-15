@@ -92,8 +92,9 @@ $app->get('/urls/{id}', function ($request, $response, $args) {
     $getterObject = new PostgreSQLGetUrls(Connection::get()->connect());
 
     $site = $getterObject->getUrl($args['id']);
-    $site[]
-    $checks = $getterObject->getChecks($args['id']);
+    $site['created_at'] = explode('.', $site['created_at'])[0] ?? null;
+
+    $checks = Handler::setChecksCreatedTime($getterObject->getChecks($site['id']));
 
     return $this->get('view')->render($response, 'url.twig', [
         'flash' => [],
@@ -129,6 +130,7 @@ $app->post('/urls/{url_id}/checks', function ($request, $response, $args) {
     $getterObject = new PostgreSQLGetUrls($connection);
 
     $site = $getterObject->getUrl($args['url_id']);
+    $site['created_at'] = explode('.', $site['created_at'])[0] ?? null;
 
     $flash = ['errors' => 'Произошла ошибка при проверке, не удалось подключиться'];
 
@@ -169,7 +171,7 @@ $app->post('/urls/{url_id}/checks', function ($request, $response, $args) {
         }
     }
 
-    $checks = $getterObject->getChecks($site['id']);
+    $checks = Handler::setChecksCreatedTime($getterObject->getChecks($site['id']));
 
     return $this->get('view')->render($response, 'url.twig', [
         'flash' => $flash,
