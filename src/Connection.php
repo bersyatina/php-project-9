@@ -21,7 +21,8 @@ class Connection
     public function connect()
     {
         // чтение параметров в файле конфигурации ini
-        $params = parse_url($_ENV['DATABASE_URL']) ?? parse_ini_file('database.ini');
+        $params = parse_url($_ENV['DATABASE_URL']); // ?? parse_ini_file('database.ini');
+        dd($params);
         if ($params === false) {
             throw new \Exception("Error reading database configuration file");
         }
