@@ -10,7 +10,6 @@ use Hexlet\Code\PostgreSQLCreateTable;
 use Hexlet\Code\PostgreSQLGetUrls;
 use Slim\Factory\AppFactory;
 use Slim\Views\Twig;
-use Slim\Flash;
 use Slim\Views\TwigMiddleware;
 use Hexlet\Code\Connection;
 
@@ -161,7 +160,7 @@ $app->post('/urls/{url_id}/checks', function ($request, $response, $args) {
                 'url_id' => $args['url_id'],
                 'status_code' => $requestCheck->getStatusCode() ?? null,
                 'h1' => $xpath->evaluate('//h1')[0]->textContent ?? '',
-                'description' => array_values(array_filter($descArr))[0] ?? '',
+                'description' => substr(array_values(array_filter($descArr))[0] ?? '', 0, 255),
                 'title' => $xpath->evaluate('//title')[0]->textContent ?? '',
             ];
 
