@@ -2,11 +2,11 @@ start:
 	PHP_CLI_SERVER_WORKERS=5 php -S 0.0.0.0:$(PORT) -t public
 
 db-reset:
-	dropdb postgres || true
-	createdb postgres
+	dropdb railway || true
+	createdb railway
 
 create_tables:
-	psql postgres < database.sql
+	psql railway < database.sql
 
 install:
 	composer install
