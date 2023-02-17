@@ -15,6 +15,9 @@ use Hexlet\Code\Connection;
 
 require __DIR__ . '/../vendor/autoload.php';
 
+$params = parse_url($_ENV['DATABASE_URL']); // ?? parse_ini_file('database.ini');
+dd($params);
+
 try {
     Connection::get()->connect();
 //    echo 'A connection to the PostgreSQL database sever has been established successfully.';
