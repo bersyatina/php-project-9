@@ -2,7 +2,7 @@
 error_reporting(-1); ini_set('display_errors', 'On');
 
 use Hexlet\Code\Handler;
-use Psr\Http\Message\ResponseInterface as Response;
+use Slim\Http\Response as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use DI\Container;
 use Hexlet\Code\PostgreSQLAddData;
@@ -34,8 +34,9 @@ try {
 } catch (\PDOException $e) {
     echo $e->getMessage();
 }
+session_start();
 
-$container = new Container();
+$container = new \DI\Container();
 
 AppFactory::setContainer($container);
 
@@ -48,20 +49,22 @@ $container->set('view', function() {
     return $twig;
 });
 
+$container->set('flash', function () {
+    return new \Slim\Flash\Messages();
+});
 
 $app = AppFactory::create();
 
 $app->add(TwigMiddleware::createFromContainer($app));
 
-$app->get('/', function (Request $request, Response $response, $args) {
-
+$app->get('/', function ($request, $response, $args) {
     return $this->get('view')->render($response, 'face.twig', [
         'flash' => [],
         'url' => [],
     ]);
 })->setName('face');
 
-$app->post('/urls', function (Request $request, Response $response) use ($app) {
+$app->post('/urls', function ($request, Response $response) use ($app) {
 
     $connection = Connection::get()->connect();
 
@@ -76,17 +79,12 @@ $app->post('/urls', function (Request $request, Response $response) use ($app) {
         ]);
     }
 
+//    $flash = $this->get('flash')->addMessage('success', 'This is a message');
+    
     $getterObject = new PostgreSQLGetUrls($connection);
     $site = $getterObject->getUrl($result['success']['id']);
-    $site['created_at'] = !empty($site['created_at']) ? explode('.', $site['created_at'])[0] : null;
-    
-    $checks = $getterObject->getChecks($result['success']['id']);
 
-    return $this->get('view')->render($response, 'url.twig', [
-        'flash' => ['success' => $result['success']['message']],
-        'site' => $site,
-        'checks' => $checks,
-    ]);
+    return $response->withRedirect("/urls/{$site['id']}");
 })->setName('face');
 
 $app->get('/urls/{id}', function ($request, $response, $args) {
@@ -125,7 +123,7 @@ $app->get('/urls', function ($request, $response, $args) {
     ]);
 })->setName('urls');
 
-$app->post('/urls/{url_id}/checks', function ($request, $response, $args) {
+$app->post('/urls/{url_id}/checks', function ($request, Response $response, $args) {
 
     $connection = Connection::get()->connect();
     $inserter = new PostgreSQLAddData($connection);
@@ -174,13 +172,15 @@ $app->post('/urls/{url_id}/checks', function ($request, $response, $args) {
         }
     }
 
-    $checks = Handler::setChecksCreatedTime($getterObject->getChecks($site['id']));
+//    $checks = Handler::setChecksCreatedTime($getterObject->getChecks($site['id']));
 
-    return $this->get('view')->render($response, 'url.twig', [
-        'flash' => $flash,
-        'site' => $site,
-        'checks' => $checks,
-    ]);
+    return $response->withRedirect("/urls/{$site['id']}");
+
+//    return $this->get('view')->render($response, 'url.twig', [
+//        'flash' => $flash,
+//        'site' => $site,
+//        'checks' => $checks,
+//    ]);
 
 })->setName('add_check');
 

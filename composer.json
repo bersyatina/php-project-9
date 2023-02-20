@@ -35,6 +35,7 @@
         "guzzlehttp/guzzle": "^7.0",
         "slim/flash": "^0.4.0",
         "php-di/slim-bridge": "^3.3",
-        "ext-iconv": "*"
+        "ext-iconv": "*",
+        "slim/http": "^1.3"
     }
 }
