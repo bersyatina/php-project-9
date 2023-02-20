@@ -91,7 +91,8 @@ $app->get('/urls/{id}', function ($request, $response, $args) {
     $getterObject = new PostgreSQLGetUrls(Connection::get()->connect());
 
     $site = $getterObject->getUrl($args['id']);
-    $site['created_at'] = explode('.', $site['created_at'])[0] ?? null;
+
+    $site['created_at'] = !empty($site['created_at']) ? explode('.', $site['created_at'])[0] : null;
 
     $checks = Handler::setChecksCreatedTime($getterObject->getChecks($site['id']));
 
@@ -129,7 +130,8 @@ $app->post('/urls/{url_id}/checks', function ($request, $response, $args) {
     $getterObject = new PostgreSQLGetUrls($connection);
 
     $site = $getterObject->getUrl($args['url_id']);
-    $site['created_at'] = explode('.', $site['created_at'])[0] ?? null;
+
+    $site['created_at'] = !empty($site['created_at']) ? explode('.', $site['created_at'])[0] : null;
 
     $flash = ['errors' => 'Произошла ошибка при проверке, не удалось подключиться'];
 

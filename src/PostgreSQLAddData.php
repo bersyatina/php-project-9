@@ -38,14 +38,18 @@ class PostgreSQLAddData
         $v->rule('url', 'name')->message('Некорректный URL')->label('Name');
 
         if ($v->validate()) {
+            $url = parse_url($name);
+            $host = $url['host'];
+            $path = $url['path'] ?? '';
+
             $containsValue = new PostgreSQLGetUrls($this->pdo);
-            $containsValue = $containsValue->getUrlByName($name);
+            $containsValue = $containsValue->getUrlByName($host . $path);
 
             if (empty($containsValue)) {
                 $sql = 'INSERT INTO urls(name, created_at) VALUES(:name, NOW())';
                 $stmt = $this->pdo->prepare($sql);
 
-                $stmt->bindValue(':name', $name);
+                $stmt->bindValue(':name', $host . $path);
 
                 $stmt->execute();
                 $id = $this->pdo->lastInsertId('urls_id_seq');
