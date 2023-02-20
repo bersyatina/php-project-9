@@ -78,6 +78,8 @@ $app->post('/urls', function (Request $request, Response $response) use ($app) {
 
     $getterObject = new PostgreSQLGetUrls($connection);
     $site = $getterObject->getUrl($result['success']['id']);
+    $site['created_at'] = !empty($site['created_at']) ? explode('.', $site['created_at'])[0] : null;
+    
     $checks = $getterObject->getChecks($result['success']['id']);
 
     return $this->get('view')->render($response, 'url.twig', [
