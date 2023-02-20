@@ -40,16 +40,15 @@ class PostgreSQLAddData
         if ($v->validate()) {
             $url = parse_url($name);
             $host = $url['host'];
-            $path = $url['path'] ?? '';
 
             $containsValue = new PostgreSQLGetUrls($this->pdo);
-            $containsValue = $containsValue->getUrlByName($host . $path);
+            $containsValue = $containsValue->getUrlByName($host);
 
             if (empty($containsValue)) {
                 $sql = 'INSERT INTO urls(name, created_at) VALUES(:name, NOW())';
                 $stmt = $this->pdo->prepare($sql);
 
-                $stmt->bindValue(':name', $host . $path);
+                $stmt->bindValue(':name', $host);
 
                 $stmt->execute();
                 $id = $this->pdo->lastInsertId('urls_id_seq');
