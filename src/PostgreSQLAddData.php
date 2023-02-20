@@ -85,8 +85,16 @@ class PostgreSQLAddData
             $stmt->bindValue(':id', $pageData['url_id']);
             $stmt->bindValue(':status_code', $pageData['status_code']);
             $stmt->bindValue(':h1', mb_convert_encoding($pageData['h1'], "UTF-8", mb_detect_encoding($pageData['h1'])));
-            $stmt->bindValue(':title', mb_convert_encoding($pageData['title'], "UTF-8", mb_detect_encoding($pageData['title'])));
-            $stmt->bindValue(':description', mb_convert_encoding($pageData['description'], "UTF-8", mb_detect_encoding($pageData['description'])));
+            $stmt->bindValue(':title', mb_convert_encoding(
+                $pageData['title'],
+                "UTF-8",
+                mb_detect_encoding($pageData['title'])
+            ));
+            $stmt->bindValue(':description', mb_convert_encoding(
+                $pageData['description'],
+                "UTF-8",
+                mb_detect_encoding($pageData['description'])
+            ));
             $stmt->execute();
 
             return ['success' => [
