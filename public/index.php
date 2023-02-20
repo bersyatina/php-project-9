@@ -60,6 +60,7 @@ $app->add(TwigMiddleware::createFromContainer($app));
 
 $app->get('/', function ($request, $response, $args) {
     $messages = $this->get('flash')->getMessages();
+
     return $this->get('view')->render($response, 'face.twig', [
         'flash' => $messages,
         'url' => [],
@@ -77,12 +78,7 @@ $app->post('/urls', function ($request, Response $response) use ($app) {
     if (array_key_exists('errors', $result)) {
         $this->get('flash')->addMessage('errors', $result['errors']);
 
-        $messages = $this->get('flash')->getMessages();
-
-        return $this->get('view')->render($response, 'face.twig', [
-            'flash' => $messages,
-            'url' => $url
-        ]);
+        return $response->withStatus(422)->withRedirect("/");
     }
 
     $getterObject = new PostgreSQLGetUrls($connection);
