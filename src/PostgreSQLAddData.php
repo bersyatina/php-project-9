@@ -30,9 +30,7 @@ class PostgreSQLAddData
     public function insertUrl(string $name): array
     {
         // подготовка запроса для добавления данных
-        $v = new Validator([
-            'name' => $name
-        ]);
+        $v = new Validator(['name' => $name]);
         $v->rule('required', 'name')->message('URL не должен быть пустым')->label('Name');
         $v->rule('lengthMax', 'name', 256)->message('Слишком длинный адрес')->label('Name');
         $v->rule('url', 'name')->message('Некорректный URL')->label('Name');
@@ -57,14 +55,9 @@ class PostgreSQLAddData
                 $id = $containsValue['id'];
                 $msg = 'Страница уже существует';
             }
-
-            return ['success' => [
-                'message' => $msg ?? '',
-                'id' => $id ?? false,
-            ]];
+            return ['success' => ['message' => $msg ?? '', 'id' => $id ?? false]];
         } else {
-            $error = $v->errors()['name'][0] ?? '';
-            return ['errors' => [$error]];
+            return ['errors' => [$v->errors()['name'][0] ?? '']];
         }
     }
 
@@ -82,15 +75,9 @@ class PostgreSQLAddData
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindValue(':id', $pageData['url_id']);
             $stmt->bindValue(':status_code', $pageData['status_code']);
-            $stmt->bindValue(':h1', mb_convert_encoding($pageData['h1'], "UTF-8", !empty(
-                $detect = mb_detect_encoding($pageData['h1'])) ? $detect : null
-            ));
-            $stmt->bindValue(':title', mb_convert_encoding($pageData['title'], "UTF-8", !empty(
-                $detect = mb_detect_encoding($pageData['title'])) ? $detect : null
-            ));
-            $stmt->bindValue(':description', mb_convert_encoding($pageData['description'], "UTF-8", !empty(
-                $detect = mb_detect_encoding($pageData['description'])) ? $detect : null
-            ));
+            $this->encodeBinder($stmt, 'h1' ,$pageData['h1']);
+            $this->encodeBinder($stmt, 'title' ,$pageData['title']);
+            $this->encodeBinder($stmt, 'description' ,$pageData['description']);
             $stmt->execute();
 
             return ['success' => [
@@ -100,5 +87,14 @@ class PostgreSQLAddData
         } else {
             return ['errors' => $v->errors()];
         }
+    }
+
+    public function encodeBinder(object $stmt, string $name, string $text): object
+    {
+        return $stmt->bindValue(":{$name}", mb_convert_encoding(
+            $text,
+            "UTF-8",
+            !empty($detect = mb_detect_encoding($text)) ? $detect : null
+        ));
     }
 }
