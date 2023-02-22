@@ -73,7 +73,6 @@ class PostgreSQLAddData
      */
     public function addCheck(array $pageData): array
     {
-        // подготовка запроса для добавления данных
         $v = new Validator(array('id' => $pageData['url_id']));
         $v->rule('integer', 'id');
 
@@ -83,20 +82,14 @@ class PostgreSQLAddData
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindValue(':id', $pageData['url_id']);
             $stmt->bindValue(':status_code', $pageData['status_code']);
-            $stmt->bindValue(':h1', mb_convert_encoding(
-                $pageData['h1'],
-                "UTF-8",
-                !empty($detect = mb_detect_encoding($pageData['h1'])) ? $detect : null
+            $stmt->bindValue(':h1', mb_convert_encoding($pageData['h1'], "UTF-8", !empty(
+                $detect = mb_detect_encoding($pageData['h1'])) ? $detect : null
             ));
-            $stmt->bindValue(':title', mb_convert_encoding(
-                $pageData['title'],
-                "UTF-8",
-                !empty($detect = mb_detect_encoding($pageData['title'])) ? $detect : null
+            $stmt->bindValue(':title', mb_convert_encoding($pageData['title'], "UTF-8", !empty(
+                $detect = mb_detect_encoding($pageData['title'])) ? $detect : null
             ));
-            $stmt->bindValue(':description', mb_convert_encoding(
-                $pageData['description'],
-                "UTF-8",
-                !empty($detect = mb_detect_encoding($pageData['description'])) ? $detect : null
+            $stmt->bindValue(':description', mb_convert_encoding($pageData['description'], "UTF-8", !empty(
+                $detect = mb_detect_encoding($pageData['description'])) ? $detect : null
             ));
             $stmt->execute();
 
