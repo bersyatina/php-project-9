@@ -5,7 +5,7 @@ namespace Hexlet\Code;
 /**
  * Создание класса Connection
  */
-class Connection
+final class Connection
 {
     /**
      * Connection
