@@ -59,7 +59,8 @@ class PostgreSQLGetUrls
         $stmt->execute([$id]);
 
         $fetchResult = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $fetchResult ?? [];
+
+        return !empty($fetchResult) ? $fetchResult : [];
     }
 
     public function getLastCheck(int $id): array|bool
