@@ -91,10 +91,11 @@ class PostgreSQLAddData
 
     public function encodeBinder(object $stmt, string $name, string $text): object
     {
-        return $stmt->bindValue(":{$name}", mb_convert_encoding(
+        $stmt->bindValue(":{$name}", mb_convert_encoding(
             $text,
             "UTF-8",
             !empty($detect = mb_detect_encoding($text)) ? $detect : null
         ));
+        return $stmt;
     }
 }
