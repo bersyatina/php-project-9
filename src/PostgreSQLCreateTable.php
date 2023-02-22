@@ -17,7 +17,7 @@ class PostgreSQLCreateTable
      * инициализация объекта с объектом \PDO
      * @тип параметра $pdo
      */
-    public function __construct($pdo)
+    public function __construct(object $pdo)
     {
         $this->pdo = $pdo;
     }

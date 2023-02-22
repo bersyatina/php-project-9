@@ -17,7 +17,7 @@ class PostgreSQLAddValues
      * инициализация объекта с объектом \PDO
      * @тип параметра $pdo
      */
-    public function __construct($pdo)
+    public function __construct(object $pdo)
     {
         $this->pdo = $pdo;
     }
@@ -25,7 +25,7 @@ class PostgreSQLAddValues
     /**
      * добавление значений
      */
-    public function insertUrl($name)
+    public function insertUrl(string $name)
     {
         // подготовка запроса для добавления данных
         $sql = 'INSERT INTO urls(name) VALUES(:name)';

@@ -67,7 +67,7 @@ $app->get('/', function ($request, $response, $args) {
     ]);
 })->setName('face');
 
-$app->post('/urls', function ($request, Response $response) use ($app) {
+$app->post('/urls', function ($request, Response $response) {
 
     $connection = Connection::get()->connect();
 
@@ -141,10 +141,10 @@ $app->post('/urls/{url_id}/checks', function ($request, Response $response, $arg
 
     $this->get('flash')->addMessage('errors', 'Произошла ошибка при проверке, не удалось подключиться');
 
-    if (Handler::isDomainAvailible($site['name'])) {
+    if (is_array($site) && Handler::isDomainAvailible($site['name'])) {
         try {
             $clientGuzzle = new GuzzleHttp\Client(['base_uri' => $site['name']]);
-            $requestCheck = $clientGuzzle->request('GET') ?? false;
+            $requestCheck = $clientGuzzle->request('GET');
         } catch (\PDOException $e) {
             $this->get('flash')->addMessage('errors', $e->getMessage());
         }
@@ -153,7 +153,7 @@ $app->post('/urls/{url_id}/checks', function ($request, Response $response, $arg
             $responseCheck = $requestCheck->getBody();
 
             libxml_use_internal_errors(true);
-            $doc = new DOMDocument(1.0, 'utf-8');
+            $doc = new DOMDocument('1.0', 'utf-8');
             $doc->loadHTML($responseCheck);
             $xpath = new DOMXPath($doc);
 
@@ -168,9 +168,9 @@ $app->post('/urls/{url_id}/checks', function ($request, Response $response, $arg
             $pageData = [
                 'url_id' => $args['url_id'],
                 'status_code' => $requestCheck->getStatusCode() ?? null,
-                'h1' => utf8_decode($xpath->evaluate('//h1')[0]->textContent) ?? '',
-                'description' => utf8_decode(substr(array_values(array_filter($descArr))[0] ?? '', 0, 255)),
-                'title' => utf8_decode($xpath->evaluate('//title')[0]->textContent) ?? '',
+                'h1' => utf8_decode($xpath->evaluate('//h1')[0]->textContent),
+                'description' => utf8_decode(substr(array_values(array_filter($descArr))[0], 0, 255)),
+                'title' => utf8_decode($xpath->evaluate('//title')[0]->textContent),
             ];
 
             $inserter->addCheck($pageData);

@@ -19,7 +19,7 @@ class PostgreSQLAddData
      * инициализация объекта с объектом \PDO
      * @тип параметра $pdo
      */
-    public function __construct($pdo)
+    public function __construct(object $pdo)
     {
         $this->pdo = $pdo;
     }
@@ -27,7 +27,7 @@ class PostgreSQLAddData
     /**
      * добавление значений в таблицу urls
      */
-    public function insertUrl($name): array| bool
+    public function insertUrl(string $name): array
     {
         // подготовка запроса для добавления данных
         $v = new Validator([
@@ -53,7 +53,7 @@ class PostgreSQLAddData
                 $stmt->execute();
                 $id = $this->pdo->lastInsertId('urls_id_seq');
                 $msg = 'Страница успешно добавлена';
-            } else {
+            } elseif (is_array($containsValue)) {
                 $id = $containsValue['id'];
                 $msg = 'Страница уже существует';
             }
@@ -63,9 +63,7 @@ class PostgreSQLAddData
                 'id' => $id,
             ]];
         } else {
-            foreach ($v->errors()['name'] as $error) {
-                return ['errors' => [$error]];
-            }
+            return ['errors' => [$v->errors()['name'][0]]];
         }
     }
 

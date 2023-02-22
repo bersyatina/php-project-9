@@ -20,7 +20,7 @@ class PostgreSQLGetUrls
      * инициализация объекта с объектом \PDO
      * @тип параметра $pdo
      */
-    public function __construct($pdo)
+    public function __construct(object $pdo)
     {
         $this->pdo = $pdo;
     }
@@ -36,7 +36,7 @@ class PostgreSQLGetUrls
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getUrl($id): array|bool
+    public function getUrl(int $id): array|bool
     {
         $sql = 'SELECT * FROM urls WHERE id = ?';
         $stmt = $this->pdo->prepare($sql);
@@ -44,7 +44,7 @@ class PostgreSQLGetUrls
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function getUrlByName($name): array|bool
+    public function getUrlByName(string $name): array|bool
     {
         $sql = 'SELECT * FROM urls WHERE name = ?';
         $stmt = $this->pdo->prepare($sql);
@@ -52,7 +52,7 @@ class PostgreSQLGetUrls
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function getChecks($id): array|bool
+    public function getChecks(int $id): array|bool
     {
         $sql = 'SELECT * FROM url_checks WHERE url_id = ? ORDER BY created_at DESC';
         $stmt = $this->pdo->prepare($sql);
@@ -60,7 +60,7 @@ class PostgreSQLGetUrls
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getLastCheck($id): array|bool
+    public function getLastCheck(int $id): array|bool
     {
         $sql = 'SELECT status_code, created_at FROM url_checks WHERE url_id = ? ORDER BY created_at DESC';
         $stmt = $this->pdo->prepare($sql);

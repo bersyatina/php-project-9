@@ -4,7 +4,7 @@ namespace Hexlet\Code;
 
 class Handler
 {
-    public static function isDomainAvailible($domain)
+    public static function isDomainAvailible(string $domain)
     {
         $url = str_contains($domain, 'http') ? $domain : "http://" . $domain;
         //проверка на валидность урла
@@ -26,7 +26,7 @@ class Handler
         return false;
     }
 
-    public static function setChecksCreatedTime($checks): array
+    public static function setChecksCreatedTime(array $checks): array
     {
         return array_map(function ($check) {
             $check['created_at'] = explode('.', $check['created_at'])[0] ?? null;
