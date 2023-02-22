@@ -75,9 +75,9 @@ class PostgreSQLAddData
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindValue(':id', $pageData['url_id']);
             $stmt->bindValue(':status_code', $pageData['status_code']);
-            $this->encodeBinder($stmt, 'h1', $pageData['h1']);
-            $this->encodeBinder($stmt, 'title', $pageData['title']);
-            $this->encodeBinder($stmt, 'description', $pageData['description']);
+            $stmt->bindValue(':h1', $this->encodeBinder($pageData['h1']));
+            $stmt->bindValue(':title', $this->encodeBinder($pageData['title']));
+            $stmt->bindValue(':description', $this->encodeBinder($pageData['description']));
             $stmt->execute();
 
             return ['success' => [
@@ -89,13 +89,12 @@ class PostgreSQLAddData
         }
     }
 
-    public function encodeBinder(object $stmt, string $name, string $text): object
+    public function encodeBinder(string $text): string
     {
-        $stmt->bindValue(":{$name}", mb_convert_encoding(
+        return mb_convert_encoding(
             $text,
             "UTF-8",
             !empty($detect = mb_detect_encoding($text)) ? $detect : null
-        ));
-        return $stmt;
+        );
     }
 }
