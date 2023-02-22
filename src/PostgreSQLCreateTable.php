@@ -2,6 +2,8 @@
 
 namespace Hexlet\Code;
 
+use PDO;
+
 /**
  * Создание в PostgreSQL таблицы из демонстрации PHP
  */
@@ -17,7 +19,7 @@ class PostgreSQLCreateTable
      * инициализация объекта с объектом \PDO
      * @тип параметра $pdo
      */
-    public function __construct(object $pdo)
+    public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
     }

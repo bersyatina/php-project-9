@@ -2,6 +2,8 @@
 
 namespace Hexlet\Code;
 
+use PDO;
+
 /**
  * Создание в записи в таблице urls
  */
@@ -17,7 +19,7 @@ class PostgreSQLAddValues
      * инициализация объекта с объектом \PDO
      * @тип параметра $pdo
      */
-    public function __construct(object $pdo)
+    public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
     }
