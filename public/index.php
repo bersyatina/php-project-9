@@ -85,9 +85,11 @@ $app->post('/urls', function ($request, Response $response) {
     $getterObject = new PostgreSQLGetUrls($connection);
     $site = $getterObject->getUrl($result['success']['id']);
 
-    $this->get('flash')->addMessage('success', $result['success']['message']);
+    if (is_array($site)) {
+        $this->get('flash')->addMessage('success', $result['success']['message']);
 
-    return $response->withRedirect("/urls/{$site['id']}");
+        return $response->withRedirect("/urls/{$site['id']}");
+    }
 })->setName('urls.post');
 
 $app->get('/urls/{id}', function ($request, $response, $args) {
@@ -95,17 +97,19 @@ $app->get('/urls/{id}', function ($request, $response, $args) {
 
     $site = $getterObject->getUrl($args['id']);
 
-    $site['created_at'] = !empty($site['created_at']) ? explode('.', $site['created_at'])[0] : null;
+    if (is_array($site)) {
+        $site['created_at'] = !empty($site['created_at']) ? explode('.', $site['created_at'])[0] : null;
 
-    $checks = Handler::setChecksCreatedTime($getterObject->getChecks($site['id']));
+        $checks = Handler::setChecksCreatedTime($getterObject->getChecks($site['id']));
 
-    $messages = $this->get('flash')->getMessages();
+        $messages = $this->get('flash')->getMessages();
 
-    return $this->get('view')->render($response, 'url.twig', [
-        'flash' => $messages,
-        'site' => $site,
-        'checks' => $checks,
-    ]);
+        return $this->get('view')->render($response, 'url.twig', [
+            'flash' => $messages,
+            'site' => $site,
+            'checks' => $checks,
+        ]);
+    }
 })->setName('url');
 
 $app->get('/urls', function ($request, $response, $args) {
@@ -167,7 +171,7 @@ $app->post('/urls/{url_id}/checks', function ($request, Response $response, $arg
 
             $pageData = [
                 'url_id' => $args['url_id'],
-                'status_code' => $requestCheck->getStatusCode() ?? null,
+                'status_code' => $requestCheck->getStatusCode(),
                 'h1' => utf8_decode($xpath->evaluate('//h1')[0]->textContent),
                 'description' => utf8_decode(substr(array_values(array_filter($descArr))[0], 0, 255)),
                 'title' => utf8_decode($xpath->evaluate('//title')[0]->textContent),
@@ -178,7 +182,9 @@ $app->post('/urls/{url_id}/checks', function ($request, Response $response, $arg
         }
     }
 
-    return $response->withRedirect("/urls/{$site['id']}");
+    $id = is_array($site) ? $site['id'] : false;
+
+    return $response->withRedirect("/urls/{$id}");
 })->setName('add_check');
 
 $app->run();
