@@ -11,7 +11,7 @@ final class Connection
      * Connection
      * тип @var
      */
-    private static object $conn;
+    private static ?Connection $conn = null;
 
     /**
      * Подключение к базе данных и возврат экземпляра объекта \PDO
@@ -53,7 +53,7 @@ final class Connection
     public static function get()
     {
         if (null === static::$conn) {
-            static::$conn = new static();
+            static::$conn = new self();
         }
 
         return static::$conn;
