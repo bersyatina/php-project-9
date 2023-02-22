@@ -64,7 +64,7 @@ class PostgreSQLAddData
             ]];
         } else {
             foreach ($v->errors()['name'] as $error) {
-                return ['errors' => $error];
+                return ['errors' => [$error]];
             }
         }
     }

@@ -76,9 +76,10 @@ $app->post('/urls', function ($request, Response $response) use ($app) {
     $result = $inserter->insertUrl($url['name']);
 
     if (array_key_exists('errors', $result)) {
-        $this->get('flash')->addMessage('errors', $result['errors']);
-
-        return $response->withStatus(422)->withRedirect("/");
+        return $this->get('view')->render($response->withStatus(422), 'face.twig', [
+            'flash' => $result,
+            'url' => $url
+        ]);
     }
 
     $getterObject = new PostgreSQLGetUrls($connection);
@@ -87,7 +88,7 @@ $app->post('/urls', function ($request, Response $response) use ($app) {
     $this->get('flash')->addMessage('success', $result['success']['message']);
 
     return $response->withRedirect("/urls/{$site['id']}");
-})->setName('face');
+})->setName('urls.post');
 
 $app->get('/urls/{id}', function ($request, $response, $args) {
     $getterObject = new PostgreSQLGetUrls(Connection::get()->connect());
