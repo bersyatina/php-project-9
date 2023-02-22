@@ -122,7 +122,7 @@ $app->get('/urls', function ($request, $response, $args) {
 
         $lastCheck = $sites->getLastCheck($site['id']);
 
-        $site['last_check'] = !empty($lastCheck) ? explode('.', $lastCheck['created_at'])[0] : null;
+        $site['last_check'] = !empty($lastCheck['created_at']) ? explode('.', $lastCheck['created_at'])[0] : null;
         $site['check_code'] = $lastCheck['status_code'] ?? null;
         return $site;
     }, $sitesList);
