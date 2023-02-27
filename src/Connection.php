@@ -42,14 +42,14 @@ final class Connection
         );
 
         $pdo = new \PDO($conStr);
-
-        $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-
+        
         try {
-            return $pdo;
+            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         } catch (\PDOException $e) {
             echo $e->getMessage();
         }
+
+        return $pdo;
     }
 
     /**
