@@ -35,4 +35,12 @@ class Handler
             return $check;
         }, $checks);
     }
+
+    public static function createTables()
+    {
+        $pdo = Connection::get()->connect();
+        $tableCreator = new PostgreSQLCreateTable($pdo);
+        $tableCreator->createTableUrls();
+        $tableCreator->createTableUrlChecks();
+    }
 }

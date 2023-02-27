@@ -13,6 +13,10 @@ final class Connection
      */
     private static ?Connection $conn = null;
 
+    protected function __construct()
+    {
+    }
+
     /**
      * Подключение к базе данных и возврат экземпляра объекта \PDO
      * @return \PDO
@@ -20,7 +24,6 @@ final class Connection
      */
     public function connect()
     {
-        // чтение параметров в файле конфигурации ini
         $params = array_key_exists('DATABASE_URL', $_ENV)
             ? parse_url($_ENV['DATABASE_URL'])
             : parse_ini_file('database.ini');
@@ -29,7 +32,6 @@ final class Connection
             throw new \Exception("Error reading database configuration file");
         }
 
-        // подключение к базе данных postgresql
         $conStr = sprintf(
             "pgsql:host=%s;port=%d;dbname=%s;user=%s;password=%s",
             $params['host'],
@@ -43,7 +45,11 @@ final class Connection
 
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-        return $pdo;
+        try {
+            return $pdo;
+        } catch (\PDOException $e) {
+            echo $e->getMessage();
+        }
     }
 
     /**
@@ -57,9 +63,5 @@ final class Connection
         }
 
         return static::$conn;
-    }
-
-    protected function __construct()
-    {
     }
 }

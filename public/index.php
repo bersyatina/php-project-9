@@ -2,12 +2,10 @@
 error_reporting(-1);
 ini_set('display_errors', 'On');
 
+use GuzzleHttp\Exception\ClientException;
 use Hexlet\Code\Handler;
 use Slim\Http\Response as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
-use DI\Container;
 use Hexlet\Code\PostgreSQLAddData;
-use Hexlet\Code\PostgreSQLCreateTable;
 use Hexlet\Code\PostgreSQLGetUrls;
 use Slim\Factory\AppFactory;
 use Slim\Views\Twig;
@@ -16,25 +14,6 @@ use Hexlet\Code\Connection;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-try {
-    Connection::get()->connect();
-//    echo 'A connection to the PostgreSQL database sever has been established successfully.';
-} catch (\PDOException $e) {
-    echo $e->getMessage();
-}
-
-try {
-    // подключение к базе данных PostgreSQL
-    $pdo = Connection::get()->connect();
-    $tableCreator = new PostgreSQLCreateTable($pdo);
-
-    // создание и запрос таблицы из
-    // базы данных
-    $tables = $tableCreator->createTableUrls();
-    $tables = $tableCreator->createTableUrlChecks();
-} catch (\PDOException $e) {
-    echo $e->getMessage();
-}
 session_start();
 
 $container = new \DI\Container();
@@ -71,7 +50,13 @@ $app->post('/urls', function ($request, Response $response) {
 
     $connection = Connection::get()->connect();
 
-    $inserter = new PostgreSQLAddData($connection);
+    try {
+        $inserter = new PostgreSQLAddData($connection);
+    } catch (\PDOException $e) {
+        Handler::createTables();
+        $inserter = new PostgreSQLAddData($connection);
+    }
+
     $url = $request->getParsedBody()['url'];
     $result = $inserter->insertUrl($url['name']);
 
@@ -149,37 +134,37 @@ $app->post('/urls/{url_id}/checks', function ($request, Response $response, $arg
         try {
             $clientGuzzle = new GuzzleHttp\Client(['base_uri' => $site['name']]);
             $requestCheck = $clientGuzzle->request('GET');
-        } catch (\PDOException $e) {
+        } catch (GuzzleHttp\Exception\ConnectException $e) {
             $this->get('flash')->addMessage('errors', $e->getMessage());
+            return $response->withRedirect("/urls/{$site['id']}");
         }
 
-        if (isset($requestCheck)) {
-            $responseCheck = $requestCheck->getBody();
+        $responseCheck = $requestCheck->getBody();
 
-            libxml_use_internal_errors(true);
-            $doc = new DOMDocument('1.0', 'utf-8');
-            $doc->loadHTML($responseCheck);
-            $xpath = new DOMXPath($doc);
+        libxml_use_internal_errors(true);
+        $doc = new DOMDocument('1.0', 'utf-8');
+        $doc->loadHTML($responseCheck);
+        $xpath = new DOMXPath($doc);
 
-            $descriptions = $xpath->evaluate('//meta');
+        $descriptions = $xpath->evaluate('//meta');
 
-            $descArr = [];
-            foreach ($descriptions as $description) {
-                $name = $description->getAttribute("name");
-                $descArr[] = str_contains($name, 'description') ? $description->getAttribute("content") : '';
-            }
-
-            $pageData = [
-                'url_id' => $args['url_id'],
-                'status_code' => $requestCheck->getStatusCode(),
-                'h1' => utf8_decode($xpath->evaluate('//h1')[0]->textContent),
-                'description' => utf8_decode(substr(array_values(array_filter($descArr))[0], 0, 255)),
-                'title' => utf8_decode($xpath->evaluate('//title')[0]->textContent),
-            ];
-
-            $inserter->addCheck($pageData);
-            $this->get('flash')->addMessage('success', 'Страница успешно проверена');
+        $descArr = [];
+        foreach ($descriptions as $description) {
+            $name = $description->getAttribute("name");
+            $descArr[] = str_contains($name, 'description') ? $description->getAttribute("content") : '';
         }
+
+        $pageData = [
+            'url_id' => $args['url_id'],
+            'status_code' => $requestCheck->getStatusCode(),
+            'h1' => utf8_decode($xpath->evaluate('//h1')[0]->textContent),
+            'description' => utf8_decode(substr(array_values(array_filter($descArr))[0], 0, 255)),
+            'title' => utf8_decode($xpath->evaluate('//title')[0]->textContent),
+        ];
+
+        $inserter->addCheck($pageData);
+        $this->get('flash')->addMessage('success', 'Страница успешно проверена');
+
     }
 
     $id = is_array($site) ? $site['id'] : false;

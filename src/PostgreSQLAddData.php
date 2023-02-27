@@ -29,7 +29,6 @@ class PostgreSQLAddData
      */
     public function insertUrl(string $name): array
     {
-        // подготовка запроса для добавления данных
         $v = new Validator(['name' => $name]);
         $v->rule('required', 'name')->message('URL не должен быть пустым')->label('Name');
         $v->rule('lengthMax', 'name', 256)->message('Слишком длинный адрес')->label('Name');
