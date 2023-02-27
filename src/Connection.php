@@ -42,7 +42,7 @@ final class Connection
         );
 
         $pdo = new \PDO($conStr);
-        
+
         try {
             $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         } catch (\PDOException $e) {
