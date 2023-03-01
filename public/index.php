@@ -157,9 +157,9 @@ $app->post('/urls/{url_id}/checks', function ($request, Response $response, $arg
         $pageData = [
             'url_id' => $args['url_id'],
             'status_code' => $requestCheck->getStatusCode(),
-            'h1' => utf8_decode($xpath->evaluate('//h1')[0]->textContent),
-            'description' => utf8_decode(substr(array_values(array_filter($descArr))[0], 0, 255)),
-            'title' => utf8_decode($xpath->evaluate('//title')[0]->textContent),
+            'h1' => $xpath->evaluate('//h1')[0]->textContent,
+            'description' => substr(array_values(array_filter($descArr))[0], 0, 255),
+            'title' => $xpath->evaluate('//title')[0]->textContent,
         ];
 
         $inserter->addCheck($pageData);
