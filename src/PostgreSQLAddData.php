@@ -74,9 +74,9 @@ class PostgreSQLAddData
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindValue(':id', $pageData['url_id']);
             $stmt->bindValue(':status_code', $pageData['status_code']);
-            $stmt->bindValue(':h1', $this->encodeBinder($pageData['h1']));
-            $stmt->bindValue(':title', $this->encodeBinder($pageData['title']));
-            $stmt->bindValue(':description', $this->encodeBinder($pageData['description']));
+            $stmt->bindValue(':h1', substr(htmlspecialchars($this->encodeBinder($pageData['h1'])), 0, 255));
+            $stmt->bindValue(':title', substr(htmlspecialchars($this->encodeBinder($pageData['title'])), 0, 255));
+            $stmt->bindValue(':description', substr(htmlspecialchars($this->encodeBinder($pageData['description'])), 0, 255));
             $stmt->execute();
 
             return ['success' => [
