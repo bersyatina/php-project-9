@@ -1,6 +1,4 @@
 <?php
-error_reporting(-1);
-ini_set('display_errors', 'On');
 
 use GuzzleHttp\Exception\ClientException;
 use Hexlet\Code\Handler;
