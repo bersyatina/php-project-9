@@ -31,6 +31,11 @@ $container->set('flash', function () {
     return new \Slim\Flash\Messages();
 });
 
+$container->set('db', function () {
+    return Connection::get()->connect();
+});
+
+
 $app = AppFactory::create();
 
 $app->add(TwigMiddleware::createFromContainer($app));
@@ -45,14 +50,11 @@ $app->get('/', function ($request, $response, $args) {
 })->setName('face');
 
 $app->post('/urls', function ($request, Response $response) {
-
-    $connection = Connection::get()->connect();
-
     try {
-        $inserter = new PostgreSQLAddData($connection);
+        $inserter = new PostgreSQLAddData($this->get('db'));
     } catch (\PDOException $e) {
         Handler::createTables();
-        $inserter = new PostgreSQLAddData($connection);
+        $inserter = new PostgreSQLAddData($this->get('db'));
     }
 
     $url = $request->getParsedBody()['url'];
@@ -65,7 +67,7 @@ $app->post('/urls', function ($request, Response $response) {
         ]);
     }
 
-    $getterObject = new PostgreSQLGetUrls($connection);
+    $getterObject = new PostgreSQLGetUrls($this->get('db'));
     $site = $getterObject->getUrl($result['success']['id']);
 
     if (is_array($site)) {
@@ -76,7 +78,7 @@ $app->post('/urls', function ($request, Response $response) {
 })->setName('urls.post');
 
 $app->get('/urls/{id}', function ($request, $response, $args) {
-    $getterObject = new PostgreSQLGetUrls(Connection::get()->connect());
+    $getterObject = new PostgreSQLGetUrls($this->get('db'));
 
     $site = $getterObject->getUrl($args['id']);
 
@@ -97,7 +99,7 @@ $app->get('/urls/{id}', function ($request, $response, $args) {
 
 $app->get('/urls', function ($request, $response, $args) {
 
-    $sites = new PostgreSQLGetUrls(Connection::get()->connect());
+    $sites = new PostgreSQLGetUrls($this->get('db'));
     $sitesList = $sites->getUrls();
 
     $sitesList = array_map(function ($site) use ($sites) {
@@ -120,9 +122,8 @@ $app->get('/urls', function ($request, $response, $args) {
 
 $app->post('/urls/{url_id}/checks', function ($request, Response $response, $args) {
 
-    $connection = Connection::get()->connect();
-    $inserter = new PostgreSQLAddData($connection);
-    $getterObject = new PostgreSQLGetUrls($connection);
+    $inserter = new PostgreSQLAddData($this->get('db'));
+    $getterObject = new PostgreSQLGetUrls($this->get('db'));
 
     $site = $getterObject->getUrl($args['url_id']);
 

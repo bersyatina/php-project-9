@@ -29,12 +29,12 @@ class PostgreSQLAddData
      */
     public function insertUrl(string $name): array
     {
-        $v = new Validator(['name' => $name]);
-        $v->rule('required', 'name')->message('URL не должен быть пустым')->label('Name');
-        $v->rule('lengthMax', 'name', 256)->message('Слишком длинный адрес')->label('Name');
-        $v->rule('url', 'name')->message('Некорректный URL')->label('Name');
+        $validator = new Validator(['name' => $name]);
+        $validator->rule('required', 'name')->message('URL не должен быть пустым')->label('Name');
+        $validator->rule('lengthMax', 'name', 256)->message('Слишком длинный адрес')->label('Name');
+        $validator->rule('url', 'name')->message('Некорректный URL')->label('Name');
 
-        if ($v->validate()) {
+        if ($validator->validate()) {
             $url = parse_url($name);
             $host = $url['host'];
 
@@ -56,7 +56,7 @@ class PostgreSQLAddData
             }
             return ['success' => ['message' => $msg ?? '', 'id' => $id ?? false]];
         } else {
-            return ['errors' => [$v->errors()['name'][0] ?? '']];
+            return ['errors' => [$validator->errors()['name'][0] ?? '']];
         }
     }
 
@@ -65,10 +65,10 @@ class PostgreSQLAddData
      */
     public function addCheck(array $pageData): array
     {
-        $v = new Validator(array('id' => $pageData['url_id']));
-        $v->rule('integer', 'id');
+        $validator = new Validator(array('id' => $pageData['url_id']));
+        $validator->rule('integer', 'id');
 
-        if ($v->validate()) {
+        if ($validator->validate()) {
             $sql = 'INSERT INTO url_checks(url_id, status_code, h1, title, description, created_at) 
                     VALUES(:id, :status_code, :h1, :title, :description, NOW())';
             $stmt = $this->pdo->prepare($sql);
@@ -84,7 +84,7 @@ class PostgreSQLAddData
                 'check' => $this->pdo->lastInsertId('url_checks_id_seq'),
             ]];
         } else {
-            return ['errors' => $v->errors()];
+            return ['errors' => $validator->errors()];
         }
     }
 
